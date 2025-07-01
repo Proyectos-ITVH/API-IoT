@@ -1,2 +1,2 @@
 # API-IoT
-Desarrollo de la api para la aplicación 
+Desarrollo de la API para futuro uso
