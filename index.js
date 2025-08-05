@@ -76,6 +76,46 @@ app.post('/api/sensor-data', async (req, res) => {
   }
 });
 
+/** EndPoint para agregar datos de sensores desde Arduino
+ * @route POST /api/arduino-data
+ * @description Recibe datos de sensores de un Arduino y los guarda en Firestore en una colección separada.
+ * @body {
+ * "sensor": "DHT22",
+ * "temperatura": 25.5,
+ * "humedad": 60.3
+ * }
+ */
+app.post('/api/arduino-data', async (req, res) => {
+  try {
+    const { sensor, temperatura, humedad } = req.body;
+
+    // Validar que se recibieron los datos mínimos
+    if (!sensor || !temperatura || !humedad) {
+      return res.status(400).send({ message: 'Faltan parámetros requeridos del Arduino (sensor, temperatura, humedad).' });
+    }
+
+    // Crear el objeto de datos para Firestore
+    const arduinoData = {
+      sensorType: sensor,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(), // Firestore registra la hora del servidor
+      valores: {
+        temperatura,
+        humedad
+      }
+    };
+
+    // Guardar los datos en la colección 'arduino_lecturas'
+    const docRef = await db.collection('arduino_lecturas').add(arduinoData);
+    console.log(`Datos de Arduino guardados con ID: ${docRef.id}`);
+
+    res.status(201).send({ message: 'Datos de Arduino recibidos y guardados exitosamente.', id: docRef.id });
+
+  } catch (error) {
+    console.error('Error al guardar datos de Arduino:', error);
+    res.status(500).send({ message: 'Error interno del servidor al procesar los datos del Arduino.', error: error.message });
+  }
+});
+
 /**
  * Endpoint GET /api/tanks
  * Obtiene la lista de todos los estanques con su configuración.
