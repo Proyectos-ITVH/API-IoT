@@ -7,6 +7,11 @@ const userRoutes = require('./routes/userRoutes');
 // Middleware para parsear JSON
 app.use(express.json());
 
+//Status
+app.get('/status', (req, res) => {
+  res.json({ status: 'ok', message: 'API activa 🚀' });
+});
+
 // Monta las rutas de la API
 app.use('/api', sensorRoutes);
 app.use('/api', tankRoutes);
