@@ -5,7 +5,7 @@ const userController = {
   // Maneja el registro de un nuevo usuario
   register: async (req, res) => {
     try {
-      const { email, password, nombre, numeroTelefonico } = req.body;
+      const { email, password, nombre, numeroTelefonico, rolUser } = req.body;
 
       if (!email || !password) {
         return res.status(400).send({ message: 'El email y la contraseña son requeridos.' });
@@ -16,7 +16,7 @@ const userController = {
         return res.status(409).send({ message: 'El usuario con este email ya existe.' });
       }
 
-      const docRef = await firestoreService.registerUser(email, password, nombre, numeroTelefonico);
+      const docRef = await firestoreService.registerUser(email, password, nombre, numeroTelefonico, rolUser);
       res.status(201).send({ message: 'Usuario registrado exitosamente.', id: docRef.id });
 
     } catch (error) {

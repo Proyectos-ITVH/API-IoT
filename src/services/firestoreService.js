@@ -64,7 +64,7 @@ const firestoreService = {
     return readings;
   },
   // Función para registrar un nuevo usuario
-  registerUser: async (email, password, nombre, numeroTelefonico) => {
+  registerUser: async (email, password, nombre, numeroTelefonico, rolUser) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const docRef = await db.collection('users').add({
@@ -72,7 +72,8 @@ const firestoreService = {
       password: hashedPassword,
       nombre: nombre || null, // Guardamos el nombre
       numeroTelefonico: numeroTelefonico || null, // Guardamos el número de teléfono
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
+      rolUser: rolUser || null, // Guardamos el rol del usuario
+      createdAt: admin.firestore.FieldValue.serverTimestamp() // Guardamos la fecha de creación del usuario 
     });
     return docRef;
   },
