@@ -68,7 +68,7 @@ const userController = {
     }
   },
 
-  // **NUEVA FUNCIÓN**: Obtiene el perfil del usuario autenticado
+  //Obtiene el perfil del usuario autenticado
   getProfile: async (req, res) => {
       try {
           const userId = req.user.uid; 

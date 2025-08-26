@@ -10,13 +10,13 @@ router.post('/users/register', userController.register);
 router.post('/users/login', userController.login);
 
 // Ruta para obtener todos los usuarios
-router.get('/users', verifyToken, userController.getUsers);
+router.get('/users', verifyToken, isAdmin, userController.getUsers);
 
 // Ruta para actualizar un usuario
-router.put('/users/:id', verifyToken, userController.updateUser);
+router.put('/users/:id', verifyToken, isAdmin, userController.updateUser);
 
 // Ruta para eliminar un usuario
-router.delete('/users/:id', verifyToken, userController.deleteUser);
+router.delete('/users/:id', verifyToken, isAdmin, userController.deleteUser);
 
 // Ruta para obtener el perfil del usuario
 router.get('/users/profile', verifyToken, userController.getProfile);  //       
