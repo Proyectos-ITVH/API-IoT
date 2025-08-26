@@ -19,6 +19,20 @@ const firestoreService = {
     });
   },
 
+  // Obtiene un usuario por su ID
+  getUserById: async (userId) => {
+    const userRef = db.collection('users').doc(userId);
+    const userDoc = await userRef.get();
+
+    // Importante: Verifica si el documento existe
+    if (!userDoc.exists) {
+        return null; // Devuelve null si no se encuentra el usuario
+    }
+
+    // Devuelve los datos del documento y su ID
+    return { id: userDoc.id, ...userDoc.data() };
+},
+
   // Guarda los datos de Arduino
   addArduinoData: async (data) => {
     return await db.collection('arduino_lecturas').add({
@@ -90,6 +104,11 @@ const firestoreService = {
     // Retorna el primer y único documento encontrado
     const doc = snapshot.docs[0];
     return { id: doc.id, ...doc.data() };
+  },
+  // Función para obtener todos los usuarios
+  getUsers: async () => {
+    const snapshot = await db.collection('users').get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   },
 
   // Función para actualizar un usuario

@@ -1,11 +1,15 @@
 const express = require('express');
 const app = express();
+const cors = require('cors');
 const sensorRoutes = require('./routes/sensorRoutes');
 const tankRoutes = require('./routes/tankRoutes');
 const userRoutes = require('./routes/userRoutes');
 
 // Middleware para parsear JSON
 app.use(express.json());
+
+// Middleware para manejar CORS
+app.use(cors());
 
 //Status
 app.get('/status', (req, res) => {
