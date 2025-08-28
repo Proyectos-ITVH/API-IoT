@@ -5,6 +5,7 @@ const sensorRoutes = require('./routes/sensorRoutes');
 const tankRoutes = require('./routes/tankRoutes');
 const userRoutes = require('./routes/userRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
+const alertRoutes = require('./routes/alertRoutes');
 
 // Middleware para parsear JSON
 app.use(express.json());
@@ -22,6 +23,7 @@ app.use('/api', sensorRoutes);
 app.use('/api', tankRoutes);
 app.use('/api', userRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api', alertRoutes);
 // Ruta principal
 app.get('/', (req, res) => {
   res.send('API de Monitoreo de Estanques de Peces está funcionando!');

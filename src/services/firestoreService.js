@@ -181,6 +181,23 @@ const firestoreService = {
     const docRef = db.collection('users').doc(userId);
     await docRef.delete();
     return true;
+  },
+  //agregar alerta
+  addAlert: async (alertData) => {
+    // Genera un timestamp del servidor para garantizar la coherencia
+    const timestamp = admin.firestore.FieldValue.serverTimestamp();
+
+    // Estructura el documento para que coincida con tu esquema:
+    // Un campo llamado 'problemas' que es un mapa con los datos de la alerta y el timestamp.
+    const newAlert = {
+      problemas: {
+        ...alertData,
+        timestamp: timestamp
+      }
+    };
+    
+    // Agrega el nuevo documento a la colección 'alertas'
+    return await db.collection('alertas').add(newAlert);
   }
 };
 
