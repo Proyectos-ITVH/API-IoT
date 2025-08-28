@@ -19,7 +19,10 @@ router.put('/users/:id', verifyToken, isAdmin, userController.updateUser);
 router.delete('/users/:id', verifyToken, isAdmin, userController.deleteUser);
 
 // Ruta para obtener el perfil del usuario
-router.get('/users/profile', verifyToken, userController.getProfile);  //       
+router.get('/users/profile', verifyToken, userController.getProfile);
+
+// Ruta para actualizar el perfil del usuario
+router.put('/users/profile', verifyToken, userController.updateProfile)
 
 
 module.exports = router;

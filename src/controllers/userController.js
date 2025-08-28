@@ -1,4 +1,4 @@
-const {firestoreService} = require('../services/firestoreService');
+const { firestoreService } = require('../services/firestoreService');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken'); // Se requiere la biblioteca jsonwebtoken
 
@@ -52,14 +52,14 @@ const userController = {
       const token = jwt.sign({ uid: user.id, rolUser: user.rolUser }, JWT_SECRET, { expiresIn: '1h' });
 
       // Login exitoso, se devuelve el token y los datos del usuario
-      res.status(200).send({ 
-        message: 'Login exitoso.', 
+      res.status(200).send({
+        message: 'Login exitoso.',
         token, // Se devuelve el token
-        user: { 
-          id: user.id, 
-          email: user.email, 
+        user: {
+          id: user.id,
+          email: user.email,
           rolUser: user.rolUser // Propiedad corregida para que coincida con el frontend
-        } 
+        }
       });
 
     } catch (error) {
@@ -70,31 +70,55 @@ const userController = {
 
   //Obtiene el perfil del usuario autenticado
   getProfile: async (req, res) => {
-      try {
-          const userId = req.user.uid; 
-          
-          if (!userId) {
-              return res.status(400).json({ message: 'ID de usuario no proporcionado en la solicitud.' });
-          }
-          
-          const user = await firestoreService.getUserById(userId);
+    try {
 
-          if (!user) {
-              return res.status(404).json({ message: 'Usuario no encontrado.' });
-          }
+      const userId = req.user.uid;
 
-          res.status(200).json({
-              id: user.id,
-              email: user.email,
-              nombre: user.nombre,
-              rolUser: user.rolUser,
-              numeroTelefonico: user.numeroTelefonico,
-          });
-
-      } catch (error) {
-          console.error('Error al obtener el perfil del usuario:', error);
-          res.status(500).json({ message: 'Error interno del servidor.' });
+      if (!userId) {
+        return res.status(400).json({ message: 'ID de usuario no proporcionado en la solicitud.' });
       }
+
+      const user = await firestoreService.getUserById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: 'Usuario no encontrado.' });
+      }
+
+      // Remueve la contraseña antes de enviar los datos
+      delete user.password;
+
+      res.status(200).json(user); // Envía todos los datos del usuario
+    } catch (error) {
+      console.error('Error al obtener el perfil del usuario:', error);
+      res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+  },
+
+  //Maneja la actualización del perfil del usuario autentificado
+  updateProfile: async (req, res) => {
+    try {
+      // Obtenemos el ID del token en lugar de los parámetros de la URL
+      const userId = req.user.uid; // O req.userId
+      const updateData = req.body;
+
+      if (Object.keys(updateData).length === 0) {
+        return res.status(400).send({ message: 'No se proporcionaron datos para actualizar.' });
+      }
+
+      const updated = await firestoreService.updateUser(userId, updateData);
+
+      if (!updated) {
+        return res.status(404).json({ message: 'Usuario no encontrado.' });
+      }
+
+      res.status(200).send({ message: 'Perfil actualizado exitosamente.' });
+    } catch (error) {
+      if (error.message.includes('El nuevo email ya está en uso')) {
+        return res.status(409).send({ message: error.message });
+      }
+      console.error('Error al actualizar perfil:', error);
+      res.status(500).send({ message: 'Error interno del servidor.', error: error.message });
+    }
   },
 
   // Maneja la actualización de un usuario
@@ -108,16 +132,16 @@ const userController = {
       }
 
       const updated = await firestoreService.updateUser(id, updateData);
-      
+
       res.status(200).send({ message: 'Usuario actualizado exitosamente.' });
     } catch (error) {
-        if (error.message.includes('El nuevo email ya está en uso')) {
-            return res.status(409).send({ message: error.message });
-        }
-        console.error('Error al actualizar usuario:', error);
-        res.status(500).send({ message: 'Error interno del servidor.', error: error.message });
+      if (error.message.includes('El nuevo email ya está en uso')) {
+        return res.status(409).send({ message: error.message });
+      }
+      console.error('Error al actualizar usuario:', error);
+      res.status(500).send({ message: 'Error interno del servidor.', error: error.message });
     }
-},
+  },
 
   // Maneja la eliminación de un usuario
   deleteUser: async (req, res) => {
@@ -135,7 +159,7 @@ const userController = {
       res.status(500).send({ message: 'Error interno del servidor.', error: error.message });
     }
   },
-  
+
   // Maneja la obtención de todos los usuarios
   getUsers: async (req, res) => {
     try {
