@@ -1,4 +1,4 @@
-const firestoreService = require('../services/firestoreService');
+const {firestoreService} = require('../services/firestoreService');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken'); // Se requiere la biblioteca jsonwebtoken
 

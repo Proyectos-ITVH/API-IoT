@@ -1,4 +1,4 @@
-const firestoreService = require('../services/firestoreService');
+const {firestoreService} = require('../services/firestoreService');
 
 const sensorController = {
   addSensorData: async (req, res) => {
