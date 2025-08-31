@@ -1,4 +1,4 @@
-const {firestoreService} = require('../services/firestoreService');
+const sensorService = require('../services/sensorService');
 
 const sensorController = {
   addSensorData: async (req, res) => {
@@ -18,7 +18,7 @@ const sensorController = {
         sensorData.observaciones = observaciones;
       }
 
-      const docRef = await firestoreService.addSensorData(sensorData);
+      const docRef = await sensorService.addSensorData(sensorData);
       console.log(`Datos de sensor guardados con ID: ${docRef.id}`);
       res.status(201).send({ message: 'Datos de sensor recibidos y guardados exitosamente.', id: docRef.id });
 
@@ -37,7 +37,7 @@ const sensorController = {
         return res.status(400).send({ message: 'ID del estanque es requerido.' });
       }
 
-      const readings = await firestoreService.getSensorReadings(estanqueId, limit);
+      const readings = await sensorService.getSensorReadings(estanqueId, limit);
 
       if (!readings || readings.length === 0) {
         return res.status(404).send({ message: `No se encontraron lecturas para el estanque con ID: ${estanqueId}.` });

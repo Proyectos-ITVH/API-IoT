@@ -1,4 +1,4 @@
-const { firestoreService } = require('../services/firestoreService');
+const userService = require('../services/userService');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken'); // Se requiere la biblioteca jsonwebtoken
 
@@ -15,12 +15,12 @@ const userController = {
         return res.status(400).send({ message: 'El email y la contraseña son requeridos.' });
       }
 
-      const existingUser = await firestoreService.findUserByEmail(email);
+      const existingUser = await userService.findUserByEmail(email);
       if (existingUser) {
         return res.status(409).send({ message: 'El usuario con este email ya existe.' });
       }
 
-      const docRef = await firestoreService.registerUser(email, password, nombre, numeroTelefonico, rolUser);
+      const docRef = await userService.registerUser(email, password, nombre, numeroTelefonico, rolUser);
       res.status(201).send({ message: 'Usuario registrado exitosamente.', id: docRef.id });
 
     } catch (error) {
@@ -38,7 +38,7 @@ const userController = {
         return res.status(400).send({ message: 'El email y la contraseña son requeridos.' });
       }
 
-      const user = await firestoreService.findUserByEmail(email);
+      const user = await userService.findUserByEmail(email);
       if (!user) {
         return res.status(404).send({ message: 'Usuario no encontrado.' });
       }
@@ -78,7 +78,7 @@ const userController = {
         return res.status(400).json({ message: 'ID de usuario no proporcionado en la solicitud.' });
       }
 
-      const user = await firestoreService.getUserById(userId);
+      const user = await userService.getUserById(userId);
 
       if (!user) {
         return res.status(404).json({ message: 'Usuario no encontrado.' });
@@ -105,7 +105,7 @@ const userController = {
         return res.status(400).send({ message: 'No se proporcionaron datos para actualizar.' });
       }
 
-      const updated = await firestoreService.updateUser(userId, updateData);
+      const updated = await userService.updateUser(userId, updateData);
 
       if (!updated) {
         return res.status(404).json({ message: 'Usuario no encontrado.' });
@@ -131,7 +131,7 @@ const userController = {
         return res.status(400).send({ message: 'No se proporcionaron datos para actualizar.' });
       }
 
-      const updated = await firestoreService.updateUser(id, updateData);
+      const updated = await userService.updateUser(id, updateData);
 
       res.status(200).send({ message: 'Usuario actualizado exitosamente.' });
     } catch (error) {
@@ -148,7 +148,7 @@ const userController = {
     try {
       const { id } = req.params;
 
-      const deleted = await firestoreService.deleteUser(id);
+      const deleted = await userService.deleteUser(id);
       if (!deleted) {
         return res.status(404).send({ message: 'Usuario no encontrado para eliminar.' });
       }
@@ -163,7 +163,7 @@ const userController = {
   // Maneja la obtención de todos los usuarios
   getUsers: async (req, res) => {
     try {
-      const users = await firestoreService.getUsers();
+      const users = await userService.getUsers();
       if (users.length === 0) {
         return res.status(404).send({ message: 'No se encontraron usuarios.' });
       }
