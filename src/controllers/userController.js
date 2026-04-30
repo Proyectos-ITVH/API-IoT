@@ -10,12 +10,15 @@ const userController = {
   // Maneja el registro de un nuevo usuario (creación en Auth y Firestore)
   register: async (req, res) => {
     try {
-      const { email, password, nombre, numeroTelefonico, rolUser, createdBy } = req.body;
+      const { email, password, nombre, numeroTelefonico, rolUser } = req.body;
+
+      //Petición para extraer el nombre del usuario
+      createdBy = req.user.nombre;
 
       // Validación de campos obligatorios
-      if (!email || !password || !nombre || !createdBy) {
+      if (!email || !password || !nombre) {
         return res.status(400).send({
-          message: 'Nombre, email, contraseña y createdBy son requeridos.'
+          message: 'Nombre, email y contraseña son requeridos.'
         });
       }
 
@@ -70,7 +73,8 @@ const userController = {
       }
 
       // **CORRECCIÓN CRUCIAL**: Genera un token JWT para la sesión
-      const token = jwt.sign({ uid: user.id, rolUser: user.rolUser }, JWT_SECRET, { expiresIn: '1h' });
+      // Otra corrección, se añade el nombre del usuario para la creación de usuarios
+      const token = jwt.sign({ uid: user.uid, rolUser: user.rolUser, nombre: user.nombre }, JWT_SECRET, { expiresIn: '1h' });
 
       // Login exitoso, se devuelve el token y los datos del usuario
       res.status(200).send({
