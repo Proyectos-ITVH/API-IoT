@@ -3,8 +3,8 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 
-// Ruta para el registro de usuarios
-router.post('/users/register', userController.register);
+// Ruta para el registro de usuarios | Modificación en la ruta para que solo los admins creen usuarios
+router.post('/users/register', verifyToken, isAdmin, userController.register);
 
 // Ruta para el login de usuarios
 router.post('/users/login', userController.login);
