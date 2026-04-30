@@ -4,18 +4,56 @@ const bcrypt = require('bcrypt');
 const usersCollection = db.collection('users');
 
 const userService = {
-  // Función para registrar un nuevo usuario
-  registerUser: async (email, password, nombre, numeroTelefonico, rolUser) => {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const docRef = await usersCollection.add({
-      email: email,
-      password: hashedPassword,
-      nombre: nombre || null,
-      numeroTelefonico: numeroTelefonico || null,
-      rolUser: rolUser || null,
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
-    });
-    return docRef;
+  // Registra un usuario en Firebase Auth y lo guarda en Firestore
+  registerUser: async (email, password, nombre, numeroTelefonico, rolUser, createdBy) => {
+
+    // Validación de campos obligatorios
+    if (!nombre || !email || !password || !createdBy) {
+      throw new Error("Nombre, email, contraseña y createdBy son obligatorios");
+    }
+
+    try {
+      // Crear usuario en Firebase Authentication
+      const userRecord = await admin.auth().createUser({
+        email,
+        password,
+      });
+
+      // UID generado por Auth (guardado en firestore para asociarse con auth)
+      const uid = userRecord.uid;
+
+      // Encriptar contraseña para Firestore
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Crear documento en Firestore con ID automático
+      const docRef = await usersCollection.add({
+        email,
+        password: hashedPassword,
+        nombre: nombre || null,
+        numeroTelefonico: numeroTelefonico || "",
+        rolUser: rolUser || "user",
+        createdBy,
+        createdAt: new Date(),
+        uid // se guarda como campo
+      });
+
+      // Retorna el ID del documento
+      return { id: docRef.id };
+
+    } catch (err) {
+      // Manejo de errores de Firebase Auth
+      if (err.code === "auth/email-already-exists") {
+        throw new Error("El correo ya está registrado");
+      }
+      if (err.code === "auth/invalid-email") {
+        throw new Error("Correo inválido");
+      }
+      if (err.code === "auth/weak-password") {
+        throw new Error("Contraseña muy débil");
+      }
+
+      throw err;
+    }
   },
 
   // Función para buscar un usuario por su ID

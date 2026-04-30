@@ -7,25 +7,46 @@ const JWT_SECRET = process.env.JWT_SECRET || 'tu_secreto_muy_seguro';
 
 const userController = {
   // Maneja el registro de un nuevo usuario
+  // Maneja el registro de un nuevo usuario (creación en Auth y Firestore)
   register: async (req, res) => {
     try {
-      const { email, password, nombre, numeroTelefonico, rolUser } = req.body;
+      const { email, password, nombre, numeroTelefonico, rolUser, createdBy } = req.body;
 
-      if (!email || !password) {
-        return res.status(400).send({ message: 'El email y la contraseña son requeridos.' });
+      // Validación de campos obligatorios
+      if (!email || !password || !nombre || !createdBy) {
+        return res.status(400).send({
+          message: 'Nombre, email, contraseña y createdBy son requeridos.'
+        });
       }
 
+      // Verifica si el email ya está registrado
       const existingUser = await userService.findUserByEmail(email);
       if (existingUser) {
-        return res.status(409).send({ message: 'El usuario con este email ya existe.' });
+        return res.status(409).send({
+          message: 'El usuario con este email ya existe.'
+        });
       }
 
-      const docRef = await userService.registerUser(email, password, nombre, numeroTelefonico, rolUser);
-      res.status(201).send({ message: 'Usuario registrado exitosamente.', id: docRef.id });
+      // Llama al servicio para crear el usuario
+      const result = await userService.registerUser(
+        email,
+        password,
+        nombre,
+        numeroTelefonico,
+        rolUser,
+        createdBy
+      );
+
+      res.status(201).send({
+        message: 'Usuario registrado exitosamente.',
+        id: result.id
+      });
 
     } catch (error) {
       console.error('Error en el registro de usuario:', error);
-      res.status(500).send({ message: 'Error interno del servidor.', error: error.message });
+      res.status(500).send({
+        message: error.message || 'Error interno del servidor.'
+      });
     }
   },
 
