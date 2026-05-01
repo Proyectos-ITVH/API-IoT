@@ -150,11 +150,41 @@ const userService = {
     }
   },
 
-  // Función para eliminar un usuario
+  // Función para eliminar un usuario de Firestore y Auth
   deleteUser: async (userId) => {
+
     const docRef = usersCollection.doc(userId);
+
+    // Verificar existencia del documento
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      return false;
+    }
+
+    const userData = doc.data();
+    const uid = userData.uid;
+
+    let deletedFromAuth = false;
+
+    try {
+      // Eliminar en Firebase Auth
+      await admin.auth().deleteUser(uid);
+      deletedFromAuth = true;
+
+    } catch (authError) {
+      // Ignorar si el usuario no existe en Auth
+      if (authError.code !== "auth/user-not-found") {
+        throw authError;
+      }
+    }
+
+    // Eliminar en Firestore
     await docRef.delete();
-    return true;
+
+    return {
+      deleted: true,
+      authDeleted: deletedFromAuth
+    };
   }
 };
 

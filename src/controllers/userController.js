@@ -210,22 +210,32 @@ const userController = {
     }
   },
 
-// Maneja la eliminación de un usuario
-deleteUser: async (req, res) => {
-  try {
-    const { id } = req.params;
+  // Maneja la eliminación de un usuario de Firestore y Auth
+  deleteUser: async (req, res) => {
+    try {
+      const { id } = req.params;
 
-    const deleted = await userService.deleteUser(id);
-    if (!deleted) {
-      return res.status(404).send({ message: 'Usuario no encontrado para eliminar.' });
+      const result = await userService.deleteUser(id);
+
+      if (!result) {
+        return res.status(404).send({
+          message: 'Usuario no encontrado para eliminar.'
+        });
+      }
+
+      res.status(200).send({
+        message: result.authDeleted
+          ? 'Usuario eliminado de Auth y Firestore.'
+          : 'Usuario eliminado de Firestore (no existía en Auth).'
+      });
+
+    } catch (error) {
+      console.error('Error al eliminar usuario:', error);
+      res.status(500).send({
+        message: 'Error interno del servidor.'
+      });
     }
-
-    res.status(200).send({ message: 'Usuario eliminado exitosamente.' });
-  } catch (error) {
-    console.error('Error al eliminar usuario:', error);
-    res.status(500).send({ message: 'Error interno del servidor.', error: error.message });
-  }
-},
+  },
 
   // Maneja la obtención de todos los usuarios
   getUsers: async (req, res) => {
