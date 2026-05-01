@@ -96,53 +96,79 @@ const userController = {
   //Obtiene el perfil del usuario autenticado
   getProfile: async (req, res) => {
     try {
+      const uid = req.user.uid;
 
-      const userId = req.user.uid;
-
-      if (!userId) {
-        return res.status(400).json({ message: 'ID de usuario no proporcionado en la solicitud.' });
+      if (!uid) {
+        return res.status(400).json({
+          message: 'ID de usuario no proporcionado en la solicitud.'
+        });
       }
 
-      const user = await userService.getUserById(userId);
+      const user = await userService.getUserByUid(uid);
 
       if (!user) {
-        return res.status(404).json({ message: 'Usuario no encontrado.' });
+        return res.status(404).json({
+          message: 'Usuario no encontrado.'
+        });
       }
 
-      // Remueve la contraseña antes de enviar los datos
       delete user.password;
 
-      res.status(200).json(user); // Envía todos los datos del usuario
+      res.status(200).json(user);
+
     } catch (error) {
       console.error('Error al obtener el perfil del usuario:', error);
-      res.status(500).json({ message: 'Error interno del servidor.' });
+      res.status(500).json({
+        message: 'Error interno del servidor.'
+      });
     }
   },
 
   //Maneja la actualización del perfil del usuario autentificado
   updateProfile: async (req, res) => {
     try {
-      // Obtenemos el ID del token en lugar de los parámetros de la URL
-      const userId = req.user.uid; // O req.userId
+      const uid = req.user.uid;
       const updateData = req.body;
 
       if (Object.keys(updateData).length === 0) {
-        return res.status(400).send({ message: 'No se proporcionaron datos para actualizar.' });
+        return res.status(400).send({
+          message: 'No se proporcionaron datos para actualizar.'
+        });
       }
 
-      const updated = await userService.updateUser(userId, updateData);
+      // Buscar el documento por UID
+      const user = await userService.getUserByUid(uid);
+
+      if (!user) {
+        return res.status(404).json({
+          message: 'Usuario no encontrado.'
+        });
+      }
+
+      // Actualizar usando docId
+      const updated = await userService.updateUser(user.id, updateData);
 
       if (!updated) {
-        return res.status(404).json({ message: 'Usuario no encontrado.' });
+        return res.status(404).json({
+          message: 'Usuario no encontrado.'
+        });
       }
 
-      res.status(200).send({ message: 'Perfil actualizado exitosamente.' });
+      res.status(200).send({
+        message: 'Perfil actualizado exitosamente.'
+      });
+
     } catch (error) {
-      if (error.message.includes('El nuevo email ya está en uso')) {
-        return res.status(409).send({ message: error.message });
+      if (error.message.includes('email ya está en uso')) {
+        return res.status(409).send({
+          message: error.message
+        });
       }
+
       console.error('Error al actualizar perfil:', error);
-      res.status(500).send({ message: 'Error interno del servidor.', error: error.message });
+      res.status(500).send({
+        message: 'Error interno del servidor.'
+      });
     }
   },
 
@@ -153,37 +179,53 @@ const userController = {
       const updateData = req.body;
 
       if (Object.keys(updateData).length === 0) {
-        return res.status(400).send({ message: 'No se proporcionaron datos para actualizar.' });
+        return res.status(400).send({
+          message: 'No se proporcionaron datos para actualizar.'
+        });
       }
 
       const updated = await userService.updateUser(id, updateData);
 
-      res.status(200).send({ message: 'Usuario actualizado exitosamente.' });
-    } catch (error) {
-      if (error.message.includes('El nuevo email ya está en uso')) {
-        return res.status(409).send({ message: error.message });
+      if (!updated) {
+        return res.status(404).json({
+          message: 'Usuario no encontrado.'
+        });
       }
+
+      res.status(200).send({
+        message: 'Usuario actualizado exitosamente.'
+      });
+
+    } catch (error) {
+      if (error.message.includes('El email ya está en uso')) {
+        return res.status(409).send({
+          message: error.message
+        });
+      }
+
       console.error('Error al actualizar usuario:', error);
-      res.status(500).send({ message: 'Error interno del servidor.', error: error.message });
+      res.status(500).send({
+        message: 'Error interno del servidor.'
+      });
     }
   },
 
-  // Maneja la eliminación de un usuario
-  deleteUser: async (req, res) => {
-    try {
-      const { id } = req.params;
+// Maneja la eliminación de un usuario
+deleteUser: async (req, res) => {
+  try {
+    const { id } = req.params;
 
-      const deleted = await userService.deleteUser(id);
-      if (!deleted) {
-        return res.status(404).send({ message: 'Usuario no encontrado para eliminar.' });
-      }
-
-      res.status(200).send({ message: 'Usuario eliminado exitosamente.' });
-    } catch (error) {
-      console.error('Error al eliminar usuario:', error);
-      res.status(500).send({ message: 'Error interno del servidor.', error: error.message });
+    const deleted = await userService.deleteUser(id);
+    if (!deleted) {
+      return res.status(404).send({ message: 'Usuario no encontrado para eliminar.' });
     }
-  },
+
+    res.status(200).send({ message: 'Usuario eliminado exitosamente.' });
+  } catch (error) {
+    console.error('Error al eliminar usuario:', error);
+    res.status(500).send({ message: 'Error interno del servidor.', error: error.message });
+  }
+},
 
   // Maneja la obtención de todos los usuarios
   getUsers: async (req, res) => {

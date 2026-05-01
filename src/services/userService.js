@@ -56,13 +56,20 @@ const userService = {
     }
   },
 
-  // Función para buscar un usuario por su ID
-  getUserById: async (userId) => {
-    const userDoc = await usersCollection.doc(userId).get();
-    if (!userDoc.exists) {
+  // Función para buscar un usuario por su UID
+  getUserByUid: async (uid) => {
+    const snapshot = await usersCollection
+      .where('uid', '==', uid)
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) {
       return null;
     }
-    return { id: userDoc.id, ...userDoc.data() };
+
+    const doc = snapshot.docs[0];
+
+    return { id: doc.id, ...doc.data() };
   },
 
   // Función para buscar un usuario por su email
@@ -81,20 +88,66 @@ const userService = {
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   },
 
-  // Función para actualizar un usuario
+  // Actualiza un usuario en Auth y Firestore
   updateUser: async (userId, updateData) => {
+
     const docRef = usersCollection.doc(userId);
-    if (updateData.password) {
-      updateData.password = await bcrypt.hash(updateData.password, 10);
+
+    // Verificar existencia
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      return false;
     }
-    if (updateData.email) {
-      const existingUser = await userService.findUserByEmail(updateData.email);
-      if (existingUser && existingUser.id !== userId) {
-        throw new Error('El nuevo email ya está en uso por otro usuario.');
+
+    const userData = doc.data();
+    const uid = userData.uid;
+
+    try {
+      // Preparar datos para Auth
+      let authData = {};
+
+      if (updateData.email) {
+        authData.email = updateData.email;
       }
+
+      if (updateData.password) {
+        authData.password = updateData.password;
+      }
+
+      // Actualizar en Auth si aplica
+      if (Object.keys(authData).length > 0) {
+        await admin.auth().updateUser(uid, authData);
+      }
+
+      // Encriptar contraseña para Firestore
+      if (updateData.password) {
+        updateData.password = await bcrypt.hash(updateData.password, 10);
+      }
+
+      // Validar email único
+      if (updateData.email) {
+        const existingUser = await userService.findUserByEmail(updateData.email);
+        if (existingUser && existingUser.id !== userId) {
+          throw new Error('El nuevo email ya está en uso por otro usuario.');
+        }
+      }
+
+      // Limpiar undefined
+      Object.keys(updateData).forEach(
+        (key) => updateData[key] === undefined && delete updateData[key]
+      );
+
+      // Actualizar Firestore
+      await docRef.update({
+        ...updateData,
+        lastUpdated: new Date()
+      });
+
+      return true;
+
+    } catch (err) {
+      throw err;
     }
-    await docRef.update(updateData);
-    return true;
   },
 
   // Función para eliminar un usuario
