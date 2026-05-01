@@ -164,22 +164,33 @@ const userService = {
     const userData = doc.data();
     const uid = userData.uid;
 
+    // Validar que exista uid
+    if (!uid) {
+      throw new Error("El usuario no tiene UID asociado");
+    }
+
     let deletedFromAuth = false;
 
     try {
-      // Eliminar en Firebase Auth
+      // Intentar eliminar en Firebase Auth
       await admin.auth().deleteUser(uid);
       deletedFromAuth = true;
+      console.log("Usuario eliminado de Auth:", uid);
 
     } catch (authError) {
-      // Ignorar si el usuario no existe en Auth
+      console.error("Error eliminando en Auth:", authError);
+
+      // Solo ignorar si realmente no existe
       if (authError.code !== "auth/user-not-found") {
         throw authError;
       }
+
+      console.log("El usuario no existía en Auth:", uid);
     }
 
     // Eliminar en Firestore
     await docRef.delete();
+    console.log("Usuario eliminado de Firestore:", userId);
 
     return {
       deleted: true,
