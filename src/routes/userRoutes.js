@@ -24,5 +24,11 @@ router.get('/users/profile', verifyToken, userController.getProfile);
 // Ruta para actualizar el perfil del usuario
 router.put('/users/profile', verifyToken, userController.updateProfile)
 
+// Validar link recovery
+router.get('/users/reset-success',userController.validateResetLink);
+
+// Reset password
+router.post('/users/reset-password', userController.resetPassword);
+
 
 module.exports = router;

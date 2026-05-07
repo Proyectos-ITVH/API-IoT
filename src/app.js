@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const path = require('path');
 const sensorRoutes = require('./routes/sensorRoutes');
 const tankRoutes = require('./routes/tankRoutes');
 const userRoutes = require('./routes/userRoutes');
@@ -13,6 +14,13 @@ app.use(express.json());
 
 // Middleware para manejar CORS
 app.use(cors());
+
+// Uso de archivos públicos
+app.use(
+  express.static(
+    path.join(__dirname, 'public')
+  )
+);
 
 //Status
 app.get('/status', (req, res) => {

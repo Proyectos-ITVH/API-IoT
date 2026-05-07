@@ -196,6 +196,99 @@ const userService = {
       deleted: true,
       authDeleted: deletedFromAuth
     };
+  },
+
+  //Función para verificar el codigo recibido
+  verifyResetCode: async (
+    oobCode
+  ) => {
+
+    if (!oobCode) {
+      throw new Error(
+        'Código inválido'
+      );
+    }
+
+    try {
+
+      const response =
+        await axios.post(
+          `https://identitytoolkit.googleapis.com/v1/accounts:resetPassword?key=${process.env.FIREBASE_API_KEY}`,
+          { oobCode }
+        );
+
+      return response.data.email;
+
+    } catch (error) {
+
+      console.error(
+        error.response?.data ||
+        error.message
+      );
+
+      throw new Error(
+        'Código inválido o expirado'
+      );
+    }
+  },
+
+  //Función para reestablecer contraseña en Auth y en Firestore
+  resetPassword: async (
+    email,
+    password
+  ) => {
+
+    if (!email || !password) {
+      throw new Error(
+        'Datos inválidos'
+      );
+    }
+
+    const snapshot =
+      await usersCollection
+        .where('email', '==', email)
+        .limit(1)
+        .get();
+
+    if (snapshot.empty) {
+      throw new Error(
+        'Usuario no encontrado'
+      );
+    }
+
+    const userDoc =
+      snapshot.docs[0];
+
+    const userData =
+      userDoc.data();
+
+    // HASH FIRESTORE
+    const hashedPassword =
+      await bcrypt.hash(
+        password,
+        10
+      );
+
+    // UPDATE FIRESTORE
+    await userDoc.ref.update({
+      password: hashedPassword,
+      lastUpdated: new Date()
+    });
+
+    // UPDATE FIREBASE AUTH
+    await admin.auth().updateUser(
+      userData.uid,
+      {
+        password
+      }
+    );
+
+    console.log(
+      'Password actualizado:',
+      email
+    );
+
+    return true;
   }
 };
 

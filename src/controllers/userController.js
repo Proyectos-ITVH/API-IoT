@@ -250,6 +250,92 @@ const userController = {
       res.status(500).send({ message: 'Error interno del servidor.', error: error.message });
     }
   },
+
+  //Maneja la validación del código recibido
+  validateResetLink: async (req, res) => {
+
+    try {
+
+      const { oobCode } = req.query;
+
+      if (!oobCode) {
+        return res
+          .status(400)
+          .send('Código inválido');
+      }
+
+      const email =
+        await userService
+          .verifyResetCode(oobCode);
+
+      return res.redirect(
+        `/reset-password/reset.html?email=${encodeURIComponent(email)}`
+      );
+
+    } catch (error) {
+
+      console.error(
+        'Error recovery:',
+        error
+      );
+
+      return res
+        .status(400)
+        .send(
+          'Código inválido o expirado'
+        );
+    }
+  },
+
+  //Maneja el cambio de contraseña
+  resetPassword: async (req, res) => {
+
+    try {
+
+      const {
+        email,
+        password
+      } = req.body;
+
+      if (!email || !password) {
+
+        return res.status(400)
+          .json({
+            message:
+              'Datos inválidos'
+          });
+      }
+
+      await userService
+        .resetPassword(
+          email,
+          password
+        );
+
+      return res.status(200)
+        .json({
+          ok: true,
+          message:
+            'Contraseña actualizada correctamente'
+        });
+
+    } catch (error) {
+
+      console.error(
+        'Error reset password:',
+        error
+      );
+
+      return res.status(500)
+        .json({
+          ok: false,
+          message:
+            error.message ||
+            'Error interno'
+        });
+    }
+  },
+
 };
 
 module.exports = userController;
