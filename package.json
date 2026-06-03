@@ -16,6 +16,7 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "firebase-admin": "^13.4.0",
-    "form-data": "^2.5.5"
+    "form-data": "^2.5.5",
+    "axios": "^1.11.0"
   }
 }
