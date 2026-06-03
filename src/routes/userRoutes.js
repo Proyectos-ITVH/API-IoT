@@ -12,17 +12,17 @@ router.post('/users/login', userController.login);
 // Ruta para obtener todos los usuarios
 router.get('/users', verifyToken, isAdmin, userController.getUsers);
 
-// Ruta para actualizar un usuario
-router.put('/users/:id', verifyToken, isAdmin, userController.updateUser);
-
-// Ruta para eliminar un usuario
-router.delete('/users/:id', verifyToken, isAdmin, userController.deleteUser);
-
 // Ruta para obtener el perfil del usuario
 router.get('/users/profile', verifyToken, userController.getProfile);
 
 // Ruta para actualizar el perfil del usuario
 router.put('/users/profile', verifyToken, userController.updateProfile)
+
+// Ruta para actualizar un usuario
+router.put('/users/:id', verifyToken, isAdmin, userController.updateUser);
+
+// Ruta para eliminar un usuario
+router.delete('/users/:id', verifyToken, isAdmin, userController.deleteUser);
 
 // Validar link recovery
 router.get('/users/reset-success',userController.validateResetLink);
