@@ -62,7 +62,7 @@ async function resetPassword() {
   try {
     msg.innerText = "⏳ Actualizando...";
 
-    const res = await fetch("/reset-password", {
+    const res = await fetch("/users/reset-password", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
